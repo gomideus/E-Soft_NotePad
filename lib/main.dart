@@ -30,8 +30,8 @@ class MyApp extends StatelessWidget {
 - Booleana done serve para marcacao de tarefas concluidas ( ou nao ),
   e pode ser alterada com medo SET
 */
-class Address {
-  Address({
+class NoteC {
+  NoteC({
     required this.id,
     required this.title,
     required this.message,
@@ -43,7 +43,7 @@ class Address {
   String message;
   bool done;
 
-  Address.fromJson(Map<String, dynamic> map)
+  NoteC.fromJson(Map<String, dynamic> map)
       : id = map['id'],
         title = map['title'],
         message = map['message'],
@@ -98,7 +98,7 @@ class Address {
 }
 
 // Para manter a lista ordenada por ID
-int mySortComparison(Address a, Address b) {
+int mySortComparison(NoteC a, NoteC b) {
   final propertyA = a.getId();
   final propertyB = b.getId();
   if (propertyA < propertyB) {
@@ -113,7 +113,7 @@ int mySortComparison(Address a, Address b) {
 // Funcao para validar tamanho do titulo. MAX = 15
 bool verifyTitle( String title ){
   bool check = true;
-  if( title.length > 15 || title.length <= 0 ){
+  if( title.length > 20 || title.length <= 0 ){
     check = false;
   }
   return check;
@@ -167,8 +167,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Funcoes do CRUD (Create, read, Update, Delete)
 
-  static Set<Address> _noteSet = {};
-  Future<void> writeNote(Address notes) async {
+  static Set<NoteC> _noteSet = {};
+  Future<void> writeNote(NoteC notes) async {
     final File fl = await _localFile;
     _noteSet.add(notes);
     final _noteListMap = _noteSet.map((e) => e.toJson()).toList();
@@ -176,14 +176,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   int id = 1;
-  Future<List<Address>> readNote() async {
+  Future<List<NoteC>> readNote() async {
     final File fl = await _localFile;
     final _content = await fl.readAsString();
 
     final List<dynamic> _jsonData = jsonDecode(_content);
-    final List<Address> _notes = _jsonData
+    final List<NoteC> _notes = _jsonData
         .map(
-          (e) => Address.fromJson(e as Map<String, dynamic>),
+          (e) => NoteC.fromJson(e as Map<String, dynamic>),
         )
         .toList();
     item = _notes.length;
@@ -202,13 +202,14 @@ class _MyHomePageState extends State<MyHomePage> {
       id = highestID +
           1; // Pegar ultimo ID e incrementar para o proximo
     }
+    _noteSet = _notes.toSet();
     //print(_notes); // Mostrar a lista de notes (caso necessario para verificacoes)
     return _notes;
   }
 
   Future<void> updateNote({
     required int id,
-    required Address updatedNote,
+    required NoteC updatedNote,
   }) async {
     _noteSet.removeWhere((e) => e.id == updatedNote.id);
     await writeNote(updatedNote);
@@ -279,12 +280,13 @@ class _MyHomePageState extends State<MyHomePage> {
                               child: ElevatedButton(
                                   onPressed: () {
                                     if (verifyTitle(titleController.text)) {
-                                      Address notes = new Address(
+                                      NoteC notes = new NoteC(
                                           id: id,
                                           title: titleController.text,
                                           message: "",
                                           done: false);
                                       setState(() {
+                                        readNote();
                                         writeNote(notes);
                                       });
                                       titleController.clear();
@@ -293,7 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       showDialog(
                                           context: context,
                                           builder: (_) => AlertDialog(
-                                            content: Text("O título deve possuir entre 1 e 15 caracteres."),
+                                            content: Text("O título deve possuir entre 1 e 20 caracteres."),
                                             actions: [
                                               ElevatedButton(onPressed: (){
                                                 Navigator.pop(context);
@@ -342,9 +344,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: ListView.builder(
                         itemCount: item,
                         itemBuilder: (BuildContext context, int index) {
-                          var myList = snapshot.data! as List<Address>;
+                          var myList = snapshot.data! as List<NoteC>;
                           myList.sort(mySortComparison);
-                          Address actual = myList[index];
+                          NoteC actual = myList[index];
                           _checkbox = actual.getCheck();
 
                           return InkWell(
@@ -414,6 +416,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       changeTitleController
                                                                           .text);
                                                                   setState(() {
+                                                                    readNote();
                                                                     updateNote(
                                                                         id: actual
                                                                             .getId(),
@@ -426,7 +429,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                   showDialog(
                                                                       context: context,
                                                                       builder: (_) => AlertDialog(
-                                                                        content: Text("O título deve possuir entre 1 e 15 caracteres."),
+                                                                        content: Text("O título deve possuir entre 1 e 20 caracteres."),
                                                                         actions: [
                                                                           ElevatedButton(
                                                                               onPressed: (){
@@ -462,6 +465,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           onPressed: (){
                                             actual.setMessage(messageController.text);
                                             setState(() {
+                                              readNote();
                                               updateNote(
                                                   id: actual.getId(),
                                                   updatedNote: actual,
@@ -494,6 +498,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       value: _checkbox,
                                       onChanged: (value) {
                                         setState(() {
+                                          readNote();
                                           actual.setCheck();
                                           updateNote(
                                               id: actual.getId(),
@@ -539,6 +544,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ElevatedButton(
                                                         onPressed: () {
                                                           setState(() {
+                                                            readNote();
                                                             deleteNote(actual.getId());
                                                           });
                                                           Navigator.pop(context);
