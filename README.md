@@ -1,7 +1,7 @@
 # esoft_notes
 Aplicação desenvolvida para o processo seletivo da E-Soft.<br/>
 Gabriel Gomides.<br/>
-Vídeo de apresentação em: https://www.youtube.com/watch?v=XW3RXIPNbwI&t=59s
+Vídeo de apresentação em: XXXXXX
 <br/>
 <br/>
 # Enunciado
